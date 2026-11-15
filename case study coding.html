@@ -1,0 +1,585 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EasyDrive Pasig Car Rental</title>
+
+<style>
+:root {
+  --gold:#d4a52c;
+  --gold-light:#f1cf70;
+  --black:#11110f;
+  --bg:#f7f5ef;
+  --white:#fff;
+  --muted:#77766f;
+  --border:#e9e4d8;
+  --green:#287653;
+  --red:#b94b42;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,sans-serif;background:var(--bg);color:var(--black)}
+button,input,select{font:inherit}
+button{cursor:pointer}
+.app{display:grid;grid-template-columns:240px 1fr;min-height:100vh}
+.sidebar{background:var(--black);color:white;padding:22px 16px}
+.brand{display:flex;align-items:center;gap:12px;padding-bottom:22px;border-bottom:1px solid #444}
+.brand img{width:55px;height:55px;border-radius:50%;object-fit:cover;border:2px solid var(--gold)}
+.brand strong{display:block;letter-spacing:1px}
+.brand small{color:var(--gold-light);font-size:10px;letter-spacing:2px}
+.nav{display:grid;gap:7px;margin-top:25px}
+.nav button{border:0;background:transparent;color:#ddd;padding:13px;text-align:left;border-radius:9px}
+.nav button:hover,.nav button.active{background:#d4a52c25;color:var(--gold-light)}
+.main{min-width:0}
+.topbar{height:70px;background:white;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;padding:0 30px}
+.content{padding:28px;max-width:1450px;margin:auto}
+.page{display:none}
+.page.active{display:block}
+h1{font-size:27px;margin:5px 0}
+.sub{font-size:13px;color:var(--muted)}
+.head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:22px}
+.btn{border:0;padding:11px 16px;border-radius:9px;font-weight:bold;font-size:12px}
+.gold{background:var(--gold);color:#17130a}
+.dark{background:var(--black);color:white}
+.light{background:#f5f1e7;color:#51472f;border:1px solid var(--border)}
+.danger{background:#fff0ee;color:var(--red)}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
+.stat,.panel,.table-wrap,.report{background:white;border:1px solid var(--border);border-radius:13px;padding:18px}
+.stat small{color:var(--muted)}
+.stat h2{font-size:27px;margin:12px 0 3px}
+.grid{display:grid;grid-template-columns:1.4fr 1fr;gap:15px}
+.panel h3{font-size:14px;margin-top:0}
+.table-wrap{padding:0;overflow:hidden;margin-top:15px}
+.tools{padding:14px;display:flex;gap:10px;flex-wrap:wrap;border-bottom:1px solid var(--border)}
+.search{padding:10px;border:1px solid var(--border);border-radius:8px;min-width:200px}
+.table-scroll{overflow-x:auto}
+table{width:100%;border-collapse:collapse;white-space:nowrap}
+th,td{padding:13px;text-align:left;border-bottom:1px solid #eee;font-size:11px}
+th{background:#fcfbf8;color:var(--muted)}
+.pill{padding:5px 9px;border-radius:20px;font-size:10px;font-weight:bold}
+.Available,.Completed{background:#e8f4ed;color:var(--green)}
+.Rented,.Pending,.Confirmed{background:#fff3d8;color:#946b12}
+.Maintenance,.Cancelled{background:#ffefed;color:var(--red)}
+.empty{text-align:center;padding:25px;color:var(--muted)}
+.modal-bg{position:fixed;inset:0;background:#0009;display:none;align-items:center;justify-content:center;padding:15px;z-index:10}
+.modal-bg.show{display:flex}
+.modal{background:white;padding:23px;border-radius:15px;width:min(540px,100%);max-height:90vh;overflow:auto}
+.modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:18px}
+.modal-head h3{margin:0}
+.close{border:0;background:#eee;border-radius:50%;width:30px;height:30px}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:13px}
+.field{display:grid;gap:6px}
+.field.full{grid-column:1/-1}
+.field label{font-size:11px;font-weight:bold}
+.field input,.field select{width:100%;padding:11px;border:1px solid var(--border);border-radius:8px}
+.actions{display:flex;justify-content:flex-end;gap:8px;margin-top:20px}
+.toast{position:fixed;bottom:20px;right:20px;background:#171715;color:white;padding:13px 18px;border-radius:9px;display:none;z-index:20}
+.toast.show{display:block}
+.reports{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.report h2{font-size:25px}
+@media(max-width:900px){
+ .app{grid-template-columns:75px 1fr}
+ .brand div,.nav button span{display:none}
+ .nav button{text-align:center;font-size:11px;padding:12px 4px}
+ .stats{grid-template-columns:repeat(2,1fr)}
+ .grid{grid-template-columns:1fr}
+}
+@media(max-width:600px){
+ .app{display:block}
+ .sidebar{position:fixed;bottom:0;left:0;right:0;height:65px;padding:5px;z-index:5}
+ .brand{display:none}
+ .nav{display:flex;justify-content:space-around;margin:0}
+ .nav button{flex:1;text-align:center;font-size:10px;padding:12px 2px}
+ .topbar{height:55px;padding:0 15px}
+ .content{padding:18px 12px 85px}
+ .head{align-items:flex-start}
+ .stats{gap:8px}
+ .stat{padding:12px}
+ .stat h2{font-size:21px}
+ .reports{grid-template-columns:1fr}
+ .form-grid{grid-template-columns:1fr}
+ .field.full{grid-column:auto}
+}
+</style>
+</head>
+
+<body>
+<div class="app">
+
+<aside class="sidebar">
+ <div class="brand">
+  <img src="logo.png" alt="EasyDrive Logo">
+  <div><strong>EASYDRIVE</strong><small>PASIG CAR RENTAL</small></div>
+ </div>
+
+ <nav class="nav">
+  <button class="active" onclick="showPage('dashboard',this)">▦ Dashboard</button>
+  <button onclick="showPage('vehicles',this)">🚘 Vehicles</button>
+  <button onclick="showPage('customers',this)">♙ Customers</button>
+  <button onclick="showPage('bookings',this)">▣ Bookings</button>
+  <button onclick="showPage('reports',this)">▤ Reports</button>
+ </nav>
+</aside>
+
+<main class="main">
+ <header class="topbar">
+  <b>EasyDrive / <span id="pageTitle">Dashboard</span></b>
+  <span id="today"></span>
+ </header>
+
+ <div class="content">
+
+ <!-- DASHBOARD -->
+ <section class="page active" id="dashboard">
+  <div class="head">
+   <div><h1>Welcome, Owner!</h1><div class="sub">EasyDrive Pasig Car Rental Management</div></div>
+   <button class="btn gold" onclick="openBooking()">+ New Booking</button>
+  </div>
+
+  <div class="stats">
+   <div class="stat"><small>Total Vehicles</small><h2 id="totalVehicles">0</h2></div>
+   <div class="stat"><small>Available Vehicles</small><h2 id="availableVehicles">0</h2></div>
+   <div class="stat"><small>Active Bookings</small><h2 id="activeBookings">0</h2></div>
+   <div class="stat"><small>Total Customers</small><h2 id="totalCustomers">0</h2></div>
+  </div>
+
+  <div class="grid">
+   <div class="panel">
+    <h3>Business Overview</h3>
+    <p class="sub">Manage your vehicles, customer records, and rental schedules.</p>
+    <button class="btn light" onclick="showPage('vehicles')">Manage Vehicles</button>
+    <button class="btn light" onclick="showPage('customers')">Manage Customers</button>
+   </div>
+   <div class="panel">
+    <h3>Quick Information</h3>
+    <p class="sub">Target customers: OFWs, tourists, and church weddings or ceremonies.</p>
+    <p class="sub">Inquiry channels: Facebook, Instagram, TikTok, and YouTube.</p>
+   </div>
+  </div>
+
+  <div class="table-wrap">
+   <div class="tools"><b>Recent Bookings</b></div>
+   <div class="table-scroll"><table>
+    <thead><tr><th>Booking ID</th><th>Customer</th><th>Vehicle</th><th>Dates</th><th>Total</th><th>Status</th></tr></thead>
+    <tbody id="recentRows"></tbody>
+   </table></div>
+  </div>
+ </section>
+
+ <!-- VEHICLES -->
+ <section class="page" id="vehicles">
+  <div class="head">
+   <div><h1>Vehicles</h1><div class="sub">Manage your Sedan, MPV, and SUV fleet.</div></div>
+   <button class="btn gold" onclick="openVehicle()">+ Add Vehicle</button>
+  </div>
+  <div class="table-wrap">
+   <div class="tools">
+    <input class="search" id="vehicleSearch" placeholder="Search vehicle..." oninput="renderVehicles()">
+    <select class="search" id="vehicleFilter" onchange="renderVehicles()">
+     <option value="all">All Status</option>
+     <option>Available</option><option>Rented</option><option>Maintenance</option>
+    </select>
+   </div>
+   <div class="table-scroll"><table>
+    <thead><tr><th>Vehicle</th><th>Plate</th><th>Type</th><th>Transmission</th><th>Engine</th><th>Features</th><th>Rate/Day</th><th>Status</th><th>Action</th></tr></thead>
+    <tbody id="vehicleRows"></tbody>
+   </table></div>
+  </div>
+ </section>
+
+ <!-- CUSTOMERS -->
+ <section class="page" id="customers">
+  <div class="head">
+   <div><h1>Customers</h1><div class="sub">Manage customer contact information.</div></div>
+   <button class="btn gold" onclick="openCustomer()">+ Add Customer</button>
+  </div>
+  <div class="table-wrap">
+   <div class="tools"><input class="search" id="customerSearch" placeholder="Search customer..." oninput="renderCustomers()"></div>
+   <div class="table-scroll"><table>
+    <thead><tr><th>Name</th><th>Mobile</th><th>Email</th><th>Action</th></tr></thead>
+    <tbody id="customerRows"></tbody>
+   </table></div>
+  </div>
+ </section>
+
+ <!-- BOOKINGS -->
+ <section class="page" id="bookings">
+  <div class="head">
+   <div><h1>Bookings</h1><div class="sub">Manage rental dates, fees, and availability.</div></div>
+   <button class="btn gold" onclick="openBooking()">+ New Booking</button>
+  </div>
+  <div class="table-wrap">
+   <div class="tools">
+    <input class="search" id="bookingSearch" placeholder="Search booking..." oninput="renderBookings()">
+    <select class="search" id="bookingFilter" onchange="renderBookings()">
+     <option value="all">All Status</option>
+     <option>Pending</option><option>Confirmed</option><option>Completed</option><option>Cancelled</option>
+    </select>
+   </div>
+   <div class="table-scroll"><table>
+    <thead><tr><th>Booking ID</th><th>Customer</th><th>Vehicle</th><th>Source</th><th>Start</th><th>End</th><th>Days</th><th>Total Fee</th><th>Status</th><th>Update</th></tr></thead>
+    <tbody id="bookingRows"></tbody>
+   </table></div>
+  </div>
+ </section>
+
+ <!-- REPORTS -->
+ <section class="page" id="reports">
+  <div class="head">
+   <div><h1>Reports</h1><div class="sub">Rental records and estimated revenue.</div></div>
+   <button class="btn dark" onclick="exportCSV()">Export CSV</button>
+  </div>
+  <div class="reports">
+   <div class="report"><small>Total Bookings</small><h2 id="reportBookings">0</h2></div>
+   <div class="report"><small>Estimated Revenue</small><h2 id="reportRevenue">₱0</h2></div>
+   <div class="report"><small>Completed Rentals</small><h2 id="reportCompleted">0</h2></div>
+  </div>
+  <div class="table-wrap">
+   <div class="tools"><b>Rental History</b></div>
+   <div class="table-scroll"><table>
+    <thead><tr><th>Booking ID</th><th>Customer</th><th>Vehicle</th><th>Dates</th><th>Fee</th><th>Status</th></tr></thead>
+    <tbody id="reportRows"></tbody>
+   </table></div>
+  </div>
+ </section>
+
+ </div>
+</main>
+</div>
+
+<!-- MODAL -->
+<div class="modal-bg" id="modalBg">
+ <div class="modal">
+  <div class="modal-head">
+   <h3 id="modalTitle">Add Record</h3>
+   <button class="close" onclick="closeModal()">×</button>
+  </div>
+  <form id="recordForm" onsubmit="saveRecord(event)">
+   <div class="form-grid" id="modalFields"></div>
+   <div class="actions">
+    <button type="button" class="btn light" onclick="closeModal()">Cancel</button>
+    <button class="btn gold" type="submit">Save</button>
+   </div>
+  </form>
+ </div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+const money = n => "₱" + Number(n || 0).toLocaleString("en-PH");
+const today = new Date();
+document.getElementById("today").textContent =
+ today.toLocaleDateString("en-PH",{month:"short",day:"numeric",year:"numeric"});
+
+const sampleVehicles = [
+ {id:1,name:"Toyota Vios",plate:"ABC 1234",type:"Sedan",transmission:"Automatic",engine:"ICE",features:"Air conditioning",rate:1800,status:"Available"},
+ {id:2,name:"Mitsubishi Xpander",plate:"XYZ 5678",type:"MPV",transmission:"Automatic",engine:"ICE",features:"7 Seater",rate:2800,status:"Available"}
+];
+
+let vehicles = JSON.parse(localStorage.getItem("ed_vehicles")) || sampleVehicles;
+let customers = JSON.parse(localStorage.getItem("ed_customers")) || [];
+let bookings = JSON.parse(localStorage.getItem("ed_bookings")) || [];
+let currentMode = "";
+
+function saveData(){
+ localStorage.setItem("ed_vehicles",JSON.stringify(vehicles));
+ localStorage.setItem("ed_customers",JSON.stringify(customers));
+ localStorage.setItem("ed_bookings",JSON.stringify(bookings));
+ renderAll();
+}
+
+function notify(message){
+ const toast=document.getElementById("toast");
+ toast.textContent=message;
+ toast.classList.add("show");
+ setTimeout(()=>toast.classList.remove("show"),2500);
+}
+
+function showPage(page,button){
+ document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+ document.getElementById(page).classList.add("active");
+ document.querySelectorAll(".nav button").forEach(b=>b.classList.remove("active"));
+ if(button)button.classList.add("active");
+ else document.querySelectorAll(".nav button").forEach(b=>{
+  if(b.getAttribute("onclick").includes(page))b.classList.add("active");
+ });
+ document.getElementById("pageTitle").textContent=page[0].toUpperCase()+page.slice(1);
+ renderAll();
+}
+
+function field(label,name,type="text",options=null,required=true){
+ let html="";
+ if(options){
+  html=`<select name="${name}" ${required?"required":""}>${options.map(x=>`<option>${x}</option>`).join("")}</select>`;
+ }else{
+  html=`<input name="${name}" type="${type}" ${required?"required":""} ${type==="number"?'min="0"':''}>`;
+ }
+ return `<div class="field"><label>${label}</label>${html}</div>`;
+}
+
+function openForm(title,html,mode){
+ currentMode=mode;
+ document.getElementById("modalTitle").textContent=title;
+ document.getElementById("modalFields").innerHTML=html;
+ document.getElementById("modalBg").classList.add("show");
+}
+
+function closeModal(){
+ document.getElementById("modalBg").classList.remove("show");
+ document.getElementById("recordForm").reset();
+}
+
+function openVehicle(){
+ openForm("Add Vehicle",
+ field("Vehicle Name","name")+
+ field("Plate Number","plate")+
+ field("Vehicle Type","type","text",["Sedan","MPV","SUV"])+
+ field("Transmission","transmission","text",["Automatic","Manual"])+
+ field("Engine Type","engine","text",["ICE","Hybrid","EV"])+
+ field("Special Features","features")+
+ field("Rental Rate Per Day (₱)","rate","number")+
+ field("Status","status","text",["Available","Rented","Maintenance"]),
+ "vehicle");
+}
+
+function openCustomer(){
+ openForm("Add Customer",
+ field("Full Name","name")+
+ field("Mobile Number","mobile","tel")+
+ field("Email Address","email","email"),
+ "customer");
+}
+
+function openBooking(){
+ if(!customers.length){
+  notify("Please add a customer first.");
+  showPage("customers");
+  openCustomer();
+  return;
+ }
+ const available=vehicles.filter(v=>v.status!=="Maintenance");
+ if(!available.length){notify("No vehicles available.");return;}
+ const customerOptions=customers.map(c=>`${c.id}|${c.name}`);
+ const vehicleOptions=available.map(v=>`${v.id}|${v.name}`);
+ openForm("Create Booking",
+ field("Customer","customerId","text",customerOptions)+
+ field("Vehicle","vehicleId","text",vehicleOptions)+
+ field("Start Date","start","date")+
+ field("End Date","end","date")+
+ field("Inquiry Source","source","text",["Facebook","Instagram","TikTok","YouTube","Walk-in","Other"])+
+ field("Booking Status","status","text",["Pending","Confirmed"]),
+ "booking");
+}
+
+function conflict(vehicleId,start,end){
+ return bookings.some(b=>
+  b.vehicleId===Number(vehicleId)&&
+  !["Cancelled","Completed"].includes(b.status)&&
+  start<=b.end&&end>=b.start
+ );
+}
+
+function saveRecord(event){
+ event.preventDefault();
+ const data=Object.fromEntries(new FormData(event.target).entries());
+
+ if(currentMode==="vehicle"){
+  vehicles.push({...data,id:Date.now(),rate:Number(data.rate)});
+  notify("Vehicle added.");
+ }
+
+ if(currentMode==="customer"){
+  customers.push({...data,id:Date.now()});
+  notify("Customer added.");
+ }
+
+ if(currentMode==="booking"){
+  const [customerId,customerName]=data.customerId.split("|");
+  const [vehicleId,vehicleName]=data.vehicleId.split("|");
+  const start=new Date(data.start+"T00:00:00");
+  const end=new Date(data.end+"T00:00:00");
+  const days=Math.ceil((end-start)/86400000)+1;
+
+  if(!data.start||!data.end||days<1){
+   notify("Please check the rental dates.");
+   return;
+  }
+
+  if(conflict(vehicleId,data.start,data.end)){
+   notify("Booking conflict! Vehicle already reserved on these dates.");
+   return;
+  }
+
+  const vehicle=vehicles.find(v=>v.id===Number(vehicleId));
+  if(!vehicle||vehicle.status==="Maintenance"){
+   notify("Vehicle is not available.");
+   return;
+  }
+
+  bookings.push({
+   id:Date.now(),
+   code:"ED-"+String(bookings.length+1).padStart(4,"0"),
+   customerId:Number(customerId),
+   customer:customerName,
+   vehicleId:Number(vehicleId),
+   vehicle:vehicleName,
+   start:data.start,
+   end:data.end,
+   days,
+   source:data.source,
+   total:days*Number(vehicle.rate),
+   status:data.status
+  });
+  notify("Booking saved. Rental fee calculated!");
+ }
+
+ closeModal();
+ saveData();
+}
+
+function escapeHTML(value){
+ return String(value??"").replace(/[&<>"']/g,c=>({
+  "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
+ }[c]));
+}
+
+function renderVehicles(){
+ const q=(document.getElementById("vehicleSearch")?.value||"").toLowerCase();
+ const filter=document.getElementById("vehicleFilter")?.value||"all";
+ const rows=vehicles.filter(v=>
+  (filter==="all"||v.status===filter)&&
+  `${v.name} ${v.plate} ${v.type}`.toLowerCase().includes(q)
+ );
+ document.getElementById("vehicleRows").innerHTML=rows.map(v=>`
+ <tr>
+  <td><b>${escapeHTML(v.name)}</b></td>
+  <td>${escapeHTML(v.plate)}</td>
+  <td>${escapeHTML(v.type)}</td>
+  <td>${escapeHTML(v.transmission)}</td>
+  <td>${escapeHTML(v.engine)}</td>
+  <td>${escapeHTML(v.features)}</td>
+  <td>${money(v.rate)}</td>
+  <td><span class="pill ${v.status}">${v.status}</span></td>
+  <td><button class="btn danger" onclick="deleteVehicle(${v.id})">Delete</button></td>
+ </tr>`).join("")||`<tr><td colspan="9" class="empty">No vehicles found.</td></tr>`;
+}
+
+function renderCustomers(){
+ const q=(document.getElementById("customerSearch")?.value||"").toLowerCase();
+ const rows=customers.filter(c=>
+  `${c.name} ${c.mobile} ${c.email}`.toLowerCase().includes(q)
+ );
+ document.getElementById("customerRows").innerHTML=rows.map(c=>`
+ <tr>
+  <td>${escapeHTML(c.name)}</td>
+  <td>${escapeHTML(c.mobile)}</td>
+  <td>${escapeHTML(c.email)}</td>
+  <td><button class="btn danger" onclick="deleteCustomer(${c.id})">Delete</button></td>
+ </tr>`).join("")||`<tr><td colspan="4" class="empty">No customers yet.</td></tr>`;
+}
+
+function renderBookings(){
+ const q=(document.getElementById("bookingSearch")?.value||"").toLowerCase();
+ const filter=document.getElementById("bookingFilter")?.value||"all";
+ const rows=bookings.filter(b=>
+  (filter==="all"||b.status===filter)&&
+  `${b.code} ${b.customer} ${b.vehicle}`.toLowerCase().includes(q)
+ );
+ document.getElementById("bookingRows").innerHTML=rows.map(b=>`
+ <tr>
+  <td>${b.code}</td>
+  <td>${escapeHTML(b.customer)}</td>
+  <td>${escapeHTML(b.vehicle)}</td>
+  <td>${escapeHTML(b.source)}</td>
+  <td>${b.start}</td><td>${b.end}</td><td>${b.days}</td>
+  <td>${money(b.total)}</td>
+  <td><span class="pill ${b.status}">${b.status}</span></td>
+  <td><select onchange="updateBooking(${b.id},this.value)">
+   ${["Pending","Confirmed","Completed","Cancelled"].map(s=>`<option ${s===b.status?"selected":""}>${s}</option>`).join("")}
+  </select></td>
+ </tr>`).join("")||`<tr><td colspan="10" class="empty">No bookings found.</td></tr>`;
+}
+
+function renderAll(){
+ renderVehicles();
+ renderCustomers();
+ renderBookings();
+
+ document.getElementById("totalVehicles").textContent=vehicles.length;
+ document.getElementById("availableVehicles").textContent=vehicles.filter(v=>v.status==="Available").length;
+ document.getElementById("activeBookings").textContent=bookings.filter(b=>["Pending","Confirmed"].includes(b.status)).length;
+ document.getElementById("totalCustomers").textContent=customers.length;
+
+ document.getElementById("recentRows").innerHTML=bookings.slice(-5).reverse().map(b=>`
+ <tr><td>${b.code}</td><td>${escapeHTML(b.customer)}</td><td>${escapeHTML(b.vehicle)}</td>
+ <td>${b.start} - ${b.end}</td><td>${money(b.total)}</td>
+ <td><span class="pill ${b.status}">${b.status}</span></td></tr>
+ `).join("")||`<tr><td colspan="6" class="empty">No bookings yet.</td></tr>`;
+
+ document.getElementById("reportBookings").textContent=bookings.length;
+ document.getElementById("reportRevenue").textContent=money(
+  bookings.filter(b=>b.status!=="Cancelled").reduce((sum,b)=>sum+b.total,0)
+ );
+ document.getElementById("reportCompleted").textContent=bookings.filter(b=>b.status==="Completed").length;
+
+ document.getElementById("reportRows").innerHTML=bookings.map(b=>`
+ <tr><td>${b.code}</td><td>${escapeHTML(b.customer)}</td><td>${escapeHTML(b.vehicle)}</td>
+ <td>${b.start} - ${b.end}</td><td>${money(b.total)}</td>
+ <td>${b.status}</td></tr>`).join("")||`<tr><td colspan="6" class="empty">No records yet.</td></tr>`;
+}
+
+function deleteVehicle(id){
+ if(!confirm("Delete this vehicle?"))return;
+ if(bookings.some(b=>b.vehicleId===id&&["Pending","Confirmed"].includes(b.status))){
+  notify("Cannot delete a vehicle with active bookings.");return;
+ }
+ vehicles=vehicles.filter(v=>v.id!==id);
+ saveData();notify("Vehicle deleted.");
+}
+
+function deleteCustomer(id){
+ if(bookings.some(b=>b.customerId===id)){
+  notify("Customer has booking history and cannot be deleted.");return;
+ }
+ if(!confirm("Delete this customer?"))return;
+ customers=customers.filter(c=>c.id!==id);
+ saveData();notify("Customer deleted.");
+}
+
+function updateBooking(id,status){
+ const booking=bookings.find(b=>b.id===id);
+ if(!booking)return;
+ if(["Pending","Confirmed"].includes(status)&&conflictExcept(booking,status)){
+  notify("Schedule conflict. Status not updated.");
+  renderBookings();return;
+ }
+ booking.status=status;
+ saveData();notify("Booking status updated.");
+}
+
+function conflictExcept(current){
+ return bookings.some(b=>
+  b.id!==current.id&&b.vehicleId===current.vehicleId&&
+  !["Cancelled","Completed"].includes(b.status)&&
+  current.start<=b.end&&current.end>=b.start
+ );
+}
+
+function exportCSV(){
+ const rows=[
+ ["Booking ID","Customer","Vehicle","Source","Start","End","Days","Total","Status"],
+ ...bookings.map(b=>[b.code,b.customer,b.vehicle,b.source,b.start,b.end,b.days,b.total,b.status])
+ ];
+ const csv=rows.map(r=>r.map(v=>'"'+String(v??"").replaceAll('"','""')+'"').join(",")).join("\n");
+ const link=document.createElement("a");
+ link.href=URL.createObjectURL(new Blob([csv],{type:"text/csv"}));
+ link.download="EasyDrive-Rental-Report.csv";
+ link.click();
+ URL.revokeObjectURL(link.href);
+}
+
+renderAll();
+</script>
+</body>
+</html>
